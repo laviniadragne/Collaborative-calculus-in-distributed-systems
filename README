@@ -1,0 +1,117 @@
+Nume: Dragne Lavinia-Stefana
+Grupa: 334 CA
+
+				     ALGORITMI PARALELI SI DISTRIBUITI
+			     Tema #3 - Calcule colaborative in sisteme distribuite
+
+
+	Continutul proiectului este urmatorul:
+	
+	- fisierele tema3.c, functions.c, functions.h
+
+	- Makefile
+
+	- acest fisier README.
+
+	
+	Flow-ul programului:
+
+	* Functiile cu implementari helper pentru aceasta tema, au fost incluse in fisierul
+functions.c. Acestea sunt folosite atat la task-urile de baza 1 si 2, cat si la bonus.
+
+	* Fiecare mesaj trimis de un proces este logat in terminal, fiind printat un mesaj
+corespunzator, de fiecare data cand se face un MPI_Send.
+
+	* Procesul cu rank-ul 0 va cunoaste initial argumentele din linia de comanda si anume,
+dimensiunea vectorului de prelucrat si flag-ul de bonus si le va memora.
+
+	* Fiecare proces, la finalul primei etape, va detine toata topologia, memorand-o intr-o
+matrice cu 3 linii (fiecare linie este corespunzatoare componentei unui cluster). Numarul de workeri,
+din fiecare cluster, se va retine intr-un vector cu 3 elemente.
+
+	* Cele 3 procese coordonator citesc din fisierele de intrare rank-urile workerilor din
+cluster-ul lor si ii memoreaza, completandu-si propria topologie. Cei 3 trimit rank-ul lor catre
+workerii subordonati, iar workerii primesc si retin rank-ul procesului coordonator. Astfel, 
+workerii vor sti de la cine pot primi mesaje.
+
+	* Procesul 0 trimite catre procesul 2, daca exista legatura de comunicatie intre 0 si 1, 
+deci daca sunt la bonus sau nu. Procesul 2 trimite informatia si catre procesul 1. Procesele
+coordonator trimit daca sunt la bonus sau nu catre workeri.
+
+	* In functie de flag-ul de bonus, voi folosi sau nu legatura dintre 0 si 1. Daca sunt in
+cazul cu legatura 0-1: Procesele coordonator isi trimit intre ele cluster-ul (vectorul cu rank-urile
+workerilor) pe care il coordoneaza. Astfel, toti coordonatorii vor cunoaste topologia.
+Ca si coordonator trimit catre workeri topologia, iar acestia o primesc si o memoreaza.
+Toate procesele afiseaza topologia.
+
+	* Procesul cu rank-ul 0 initializeaza vectorul ce trebuie prelucrat si calculeaza numarul
+total de workeri, din toate clusterele. Imparte, in mod egal, vectorul la numarul de workeri. 
+Restul rezultat il retine. Trimite, catre coordonatorii 1 si 2, bucata din vector ce trebuie
+prelucrata de cluster-ul lor, precum si cat trebuie sa munceasca 1 worker.
+
+	* Toate procesele coordonator acum cunosc bucata din vector alocata cluster-ului lor si
+distribuie, fiecarui worker subordonat, doar bucatica ce o are acesta de prelucrat, din vector.
+Workerii prelucreaza si trimit bucata din vector alocata, catre coordonatori. Coordonatorii primesc
+de la workeri vectorul si il trimit catre procesul 0. Procesul 0 verifica daca mai exista resturi
+din vector nealocate, la prima distribuire. In caz afirmativ, trimite catre procesele 1 si 2 un flag
+ca programul nu s-a terminat, iar ulterior, coordonatorii trimit acelasi semnal catre workerii lor.
+
+	* Procesul 0 calculeaza, pentru fiecare cluster, de ce dimensiune din vectorul neprelucrat
+trebuie sa se ocupe. Alocarea muncii incepe cu cluster-ul 0 si continua cu 1 si 2. In cazul in care
+sunt destui workeri, astfel incat, fiecare sa munceasca in mod egal, in primul sau in primele 2
+clustere, clusterele ramase vor primi 0 elemente de prelucrat.
+
+	* Procesul 0 trimite catre coordonatorii 1 si 2 ce bucata din vector trebuie sa mai
+prelucreze cluster-ul lor. Bucatile neprelucrate, vor fi cele ramase la finalul vectorului, dupa
+prima prelucrare. Se va tine cont de asta, folosind variabila deplas, care va tine cont cat
+a muncit anterior fiecare cluster.
+
+	* Toate procesele coordonator trimit workerilor bucatile ce au mai ramas de prelucrat,
+munca fiind impartita in mod egal. Daca exista mai multi workeri, decat elemente in vectorul
+alocat pentru acel cluster, workerii ce nu muncesc vor primi de la coordonator elementul -1, ca un
+flag de a se opri. Ca si worker, daca nu primesc -1, prelucrez vectorul primit si trimit catre
+coordonator rezultatul, daca primesc -1, nu trimit nimic.
+
+	* Coordonatorii primesc de la subordonati vectorul prelucrat si procesele 1 si 2 il trimit
+procesului 0. Procesul 0 primeste si bucatile ramase si afiseaza rezultatul final.
+
+	* Se elibereaza memoria.
+
+
+	* BONUS:
+
+	* Diferit de task-urile 1 si 2, toate comunicatiile de la procesul 0 la procesul 1 si invers
+vor fi realizate folosind, ca si intermediar, procesul 2. Astfel, dupa citirea de catre coordonatori
+a fisierelor de input, procesul 2 va trimite catre 0 si 1 cluster-ul pe care acesta il coordoneaza
+si va media transmiterea clusterelor 0 si 1. Procesul cu rank-ul 0 va trimite catre 2, cluster-ul sau,
+care mai departe trimite catre 1. Procesul se realizeaza si in sens invers la fel.
+
+	* Procesele de distributie a vectorului de prelucrat in interiorul cluster-ului, de la
+coordonator, catre workerii subordonati si invers raman neschimbate la bonus.
+
+	* La fel cum am mentionat si anterior, procesele de distributie a vectorului de la procesul
+0 la procesul 1, se va realiza prin intermediul procesului 2. La fel si primirea datelor prelucrate
+de la 1 la 0. Afisarea rezultatului final va fi realizata, de procesul 0.
+
+
+	
+	* Referinte:
+	- Laboratorul 8 si 9
+	
+ 
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
